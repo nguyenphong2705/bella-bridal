@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Bell, Calendar, DollarSign, Sparkles } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatVnPhone } from '@/lib/format';
 import type { Appointment, NotificationLog } from '@/types';
 
 interface DashboardData {
@@ -59,7 +59,7 @@ export default function AdminDashboardPage() {
             {data.recent_appointments.map((a) => (
               <div key={a.id} className="flex items-center justify-between border-b border-blush-pink/40 pb-3 text-sm">
                 <div>
-                  <p className="font-medium text-charcoal">{a.customer_name} • {a.customer_phone}</p>
+                  <p className="font-medium text-charcoal">{a.customer_name} • {formatVnPhone(a.customer_phone)}</p>
                   <p className="text-xs text-muted">{a.booking_code} — {a.appointment_date} lúc {a.time_slot}</p>
                 </div>
                 <span className="rounded-full bg-soft-pink px-2.5 py-1 text-xs font-medium text-rose-gold-dark">
@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
                 <div key={n.id} className="flex items-center justify-between border-b border-blush-pink/40 pb-3 text-xs">
                   <div>
                     <p className="font-medium text-charcoal">
-                      <span className="uppercase">{n.channel}</span> → {n.recipient}
+                      <span className="uppercase">{n.channel}</span> → {formatVnPhone(n.recipient)}
                     </p>
                     <p className="text-muted">{n.response_message}</p>
                   </div>

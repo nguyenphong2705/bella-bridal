@@ -4,7 +4,7 @@ import { useSite } from '@/contexts/SiteContext';
 
 export default function ZaloFloatingButton() {
   const { settings } = useSite();
-  const zaloUrl = settings.zalo_url || 'https://zalo.me/0901234567';
+  const zaloUrl = settings.zalo_url || 'https://zalo.me/84901234567';
 
   return (
     <a

@@ -8,6 +8,7 @@ node_modules/
 /frontend/out/
 /frontend/dist/
 /backend/dist/
+*.tsbuildinfo
 
 # Local SQLite database
 /backend/data/

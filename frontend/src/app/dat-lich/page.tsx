@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Bell, Calendar, CheckCircle2, Clock, Radio } from 'lucide-react';
 import { API_ORIGIN, apiClient } from '@/lib/api';
+import { formatVnPhone } from '@/lib/format';
 import type { Dress, ServiceItem, SlotAvailability } from '@/types';
 
 interface BookingSuccess {
@@ -126,7 +127,7 @@ function BookingContent() {
               <ul className="mt-2 space-y-1.5 text-xs text-muted">
                 {success.notifications.map((n, idx) => (
                   <li key={idx}>
-                    • <strong className="uppercase text-charcoal">{n.channel}</strong> ({n.recipient || '—'}):{' '}
+                    • <strong className="uppercase text-charcoal">{n.channel}</strong> ({n.recipient ? formatVnPhone(n.recipient) : '—'}):{' '}
                     <span className="text-emerald-700">{n.status}</span> — {n.message}
                   </li>
                 ))}
@@ -238,7 +239,7 @@ function BookingContent() {
             <input
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="0901234567"
+              placeholder="+84 901 234 567"
               className="luxury-input"
               required
             />

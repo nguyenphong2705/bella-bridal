@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
+import { DatabaseService, formatVnPhonePlus84 } from '../database/database.service';
 
 @Controller('api/v1')
 export class PublicController {
@@ -223,11 +223,12 @@ export class PublicController {
   @Post('contacts')
   createContact(@Body() body: { name?: string; phone?: string; email?: string; message?: string }) {
     const name = (body.name || '').trim();
-    const phone = (body.phone || '').trim();
+    const rawPhone = (body.phone || '').trim();
     const message = (body.message || '').trim();
-    if (!name || !phone || !message) {
+    if (!name || !rawPhone || !message) {
       throw new BadRequestException({ message: 'Vui lòng nhập đầy đủ họ tên, số điện thoại và nội dung.' });
     }
+    const phone = formatVnPhonePlus84(rawPhone);
     const res = this.db.db
       .prepare('INSERT INTO contact_messages (name, phone, email, message) VALUES (?, ?, ?, ?)')
       .run(name, phone, body.email?.trim() || null, message);
@@ -264,7 +265,7 @@ export class PublicController {
     if (existing && existing.message_count >= maxMsgs) {
       return {
         session_id: sessionId,
-        reply: 'Bạn đã đạt giới hạn tin nhắn cho phiên tư vấn này. Vui lòng đặt lịch thử váy hoặc liên hệ trực tiếp qua Zalo 0901 234 567 để được stylist hỗ trợ chi tiết nhé!',
+        reply: 'Bạn đã đạt giới hạn tin nhắn cho phiên tư vấn này. Vui lòng đặt lịch thử váy hoặc liên hệ trực tiếp qua Zalo +84 901 234 567 để được stylist hỗ trợ chi tiết nhé!',
       };
     }
 

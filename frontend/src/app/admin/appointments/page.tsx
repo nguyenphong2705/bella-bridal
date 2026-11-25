@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api';
+import { formatVnPhone } from '@/lib/format';
 import type { Appointment } from '@/types';
 
 export default function AdminAppointmentsPage() {
@@ -45,7 +46,7 @@ export default function AdminAppointmentsPage() {
               <tr key={a.id}>
                 <td className="px-4 py-3">
                   <p className="font-medium text-charcoal">{a.customer_name}</p>
-                  <p className="text-xs text-muted">{a.booking_code} • {a.customer_phone}</p>
+                  <p className="text-xs text-muted">{a.booking_code} • {formatVnPhone(a.customer_phone)}</p>
                 </td>
                 <td className="px-4 py-3">
                   <p className="font-medium">{a.appointment_date}</p>

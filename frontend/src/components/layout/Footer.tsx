@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import { useSite } from '@/contexts/SiteContext';
+import { formatVnPhone, toTelHref } from '@/lib/format';
 
 export default function Footer() {
   const { settings } = useSite();
@@ -39,7 +40,9 @@ export default function Footer() {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 shrink-0 text-plum" />
-              <span>{settings.hotline || '0901 234 567'}</span>
+              <a href={toTelHref(settings.hotline)} className="hover:text-plum">
+                {formatVnPhone(settings.hotline)}
+              </a>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="h-4 w-4 shrink-0 text-plum" />

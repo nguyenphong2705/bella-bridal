@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Calendar, ChevronDown, Menu, Phone, Sparkles, X } from 'lucide-react';
 import { useSite } from '@/contexts/SiteContext';
+import { formatVnPhone, toTelHref } from '@/lib/format';
 
 const navLinks = [
   { href: '/', label: 'Trang chủ' },
@@ -147,11 +148,11 @@ export default function Header() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <a
-            href={`tel:${(settings.hotline || '0901234567').replace(/\s+/g, '')}`}
+            href={toTelHref(settings.hotline)}
             className="flex items-center gap-1.5 text-sm font-medium text-charcoal/80 hover:text-rose-gold-dark"
           >
             <Phone className="h-4 w-4 text-rose-gold" />
-            <span>{settings.hotline || '0901 234 567'}</span>
+            <span>{formatVnPhone(settings.hotline)}</span>
           </a>
           <Link href="/dat-lich" className="btn-primary py-2.5">
             <Calendar className="h-4 w-4" />

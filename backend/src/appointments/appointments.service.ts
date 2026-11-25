@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { Subject } from 'rxjs';
-import { DatabaseService } from '../database/database.service';
+import { DatabaseService, formatVnPhonePlus84 } from '../database/database.service';
 import { NotificationService } from '../notifications/notification.service';
 
 export const TIME_SLOTS = ['09:00', '10:30', '13:30', '15:00', '16:30', '18:00'] as const;
@@ -53,7 +53,8 @@ export class AppointmentsService {
     notes?: string;
   }) {
     const customerName = (body.customer_name || '').trim();
-    const customerPhone = (body.customer_phone || '').trim();
+    const rawCustomerPhone = (body.customer_phone || '').trim();
+    const customerPhone = rawCustomerPhone ? formatVnPhonePlus84(rawCustomerPhone) : '';
     const customerEmail = (body.customer_email || '').trim() || null;
     const appointmentDate = (body.appointment_date || '').trim();
     const timeSlot = (body.time_slot || '').trim();

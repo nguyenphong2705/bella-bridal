@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BellaBridal — Full-Size 3D Wedding Dress Hero Banner</title>
+  <style>
+    :root {
+      --studio-bg: #f8f4ec;
+      --plum: #6d4c7d;
+      --plum-dark: #573b65;
+      --rose-gold: #9e5863;
+      --charcoal: #3a2e39;
+      --muted: #5e525e;
+      --lavender-soft: #efe8f6;
+      --lavender-deep: #e6ddf0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #fffdfc;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--charcoal);
+    }
+
+    .hero-banner {
+      position: relative;
+      width: 100%;
+      min-height: 92vh;
+      overflow: hidden;
+      background: linear-gradient(180deg, #b29ea0 0%, #c4aea9 22%, #d4b5ab 44%, #cf9f93 66%, #c58a7e 83.5%, #ead8d1 86.5%, #dfcac3 94%, #ceb5af 100%);
+      user-select: none;
+      cursor: grab;
+      touch-action: pan-y;
+      border-bottom: 1px solid rgba(197, 155, 149, 0.6);
+    }
+
+    .hero-banner.is-dragging {
+      cursor: grabbing;
+    }
+
+    .gown-stage {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 34%;
+      perspective: 1400px;
+      pointer-events: none;
+    }
+
+    .gown-plane {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      will-change: transform, filter;
+      -webkit-mask-image: radial-gradient(ellipse 76% 90% at 52% 50%, #000 62%, rgba(0, 0, 0, 0.65) 80%, transparent 98%);
+      mask-image: radial-gradient(ellipse 76% 90% at 52% 50%, #000 62%, rgba(0, 0, 0, 0.65) 80%, transparent 98%);
+    }
+
+    .gown-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: scale(1.08);
+      will-change: opacity;
+    }
+
+    .gown-layer--angle {
+      opacity: 0;
+    }
+
+    .sheen {
+      position: absolute;
+      inset: 0;
+      mix-blend-mode: soft-light;
+    }
+
+    .floor-shadow {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      width: 52%;
+      height: 32px;
+      margin-left: -26%;
+      border-radius: 999px;
+      background: rgba(109, 76, 125, 0.16);
+      filter: blur(22px);
+    }
+
+    .left-veil {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 44% 52% at 68% 40%, rgba(246, 232, 226, 0.56) 0%, transparent 80%),
+        radial-gradient(ellipse 48% 58% at 20% 50%, rgba(248, 237, 233, 0.42) 0%, transparent 78%);
+    }
+
+    .hero-content-wrap {
+      position: relative;
+      z-index: 10;
+      max-width: 1280px;
+      min-height: 92vh;
+      margin: 0 auto;
+      padding: 64px 32px;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .hero-info {
+      max-width: 560px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--plum);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--lavender-deep);
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(36px, 4.6vw, 60px);
+      line-height: 1.12;
+      font-weight: 600;
+    }
+
+    .desc {
+      margin-top: 18px;
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .cta-group {
+      margin-top: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      pointer-events: auto;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 13px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+
+    .btn-primary {
+      background: var(--plum);
+      color: #fff;
+      box-shadow: 0 10px 30px -10px rgba(109, 76, 125, 0.35);
+    }
+
+    .btn-primary:hover { background: var(--plum-dark); }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--charcoal);
+      border: 1px solid rgba(109, 76, 125, 0.55);
+    }
+
+    .btn-outline:hover { background: var(--lavender-soft); }
+
+    .stats {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(109, 76, 125, 0.16);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 440px;
+    }
+
+    .stat-num {
+      font-family: Georgia, serif;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .controls-bar {
+      position: absolute;
+      right: 28px;
+      bottom: 24px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px -6px rgba(58, 46, 57, 0.1);
+    }
+
+    .angle-pill {
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: var(--lavender-soft);
+      color: var(--plum);
+      font-family: monospace;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .ctrl-btn {
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(109, 76, 125, 0.28);
+      background: #fff;
+      color: var(--charcoal);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .ctrl-btn:hover { background: var(--lavender-soft); }
+
+    @media (max-width: 1024px) {
+      .gown-stage { left: 0; height: 58%; bottom: auto; }
+      .left-veil {
+        background: linear-gradient(0deg, var(--studio-bg) 0%, rgba(248, 244, 236, 0.94) 46%, transparent 82%);
+      }
+      .hero-content-wrap { align-items: flex-end; padding: 280px 20px 84px; }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero-banner" id="banner">
+    <div class="gown-stage">
+      <div class="gown-plane" id="plane" style="mask-image:none;-webkit-mask-image:none;">
+        <img class="gown-layer" id="layerCenter" src="/images/hero-gown-center.png" alt="Aurelia Couture Center" />
+        <img class="gown-layer gown-layer--angle" id="layerLeft" src="/images/hero-gown-left.png" alt="Aurelia Couture Left" />
+        <img class="gown-layer gown-layer--angle" id="layerRight" src="/images/hero-gown-right.png" alt="Aurelia Couture Right" />
+      </div>
+      <div class="floor-shadow" id="floorShadow"></div>
+    </div>
+
+    <div class="left-veil"></div>
+
+    <div class="hero-content-wrap">
+      <div class="hero-info">
+        <span class="badge">HAUTE COUTURE BRIDAL 2026</span>
+        <h1>Vẻ Đẹp Tinh Khôi Cho Ngày Trọng Đại</h1>
+        <p class="desc">
+          Khám phá hơn 250+ tuyệt tác váy cưới nhập khẩu và thiết kế độc bản tại BellaBridal (+84 901 234 567).
+          Trải nghiệm thử váy riêng tư 1-1 cùng Bridal Stylist.
+        </p>
+        <div class="cta-group">
+          <a href="/dat-lich" class="btn btn-primary">Đặt lịch thử váy ngay</a>
+          <a href="/bo-suu-tap" class="btn btn-outline">Xem bộ sưu tập</a>
+        </div>
+        <div class="stats">
+          <div><div class="stat-num">250+</div><div class="stat-label">Thiết kế độc quyền</div></div>
+          <div><div class="stat-num">5.000+</div><div class="stat-label">Cô dâu hạnh phúc</div></div>
+          <div><div class="stat-num">1 - 1</div><div class="stat-label">Phòng thử VIP</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <span class="angle-pill" id="angleLabel">0°</span>
+      <button type="button" class="ctrl-btn" id="spinBtn">Dừng</button>
+      <button type="button" class="ctrl-btn" id="resetBtn">Đặt lại</button>
+    </div>
+  </section>
+
+  <script>
+    (() => {
+      const banner = document.getElementById('banner');
+      const plane = document.getElementById('plane');
+      const floorShadow = document.getElementById('floorShadow');
+      const layerCenter = document.getElementById('layerCenter');
+      const layerLeft = document.getElementById('layerLeft');
+      const layerRight = document.getElementById('layerRight');
+      const angleLabel = document.getElementById('angleLabel');
+      const resetBtn = document.getElementById('resetBtn');
+      const spinBtn = document.getElementById('spinBtn');
+
+      const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+      const s = {
+        cy: 0, cx: 0, vy: 0, vx: 0,
+        by: 0, bx: 0, hy: 0, hx: 0,
+        dragging: false, hovered: false, auto: true, phase: 0,
+        sx: 0, sy: 0, sby: 0, sbx: 0
+      };
+
+      banner.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('a, button')) return;
+        s.dragging = true;
+        s.auto = false;
+        spinBtn.textContent = 'Tự xoay';
+        s.sx = e.clientX; s.sy = e.clientY;
+        s.sby = s.by; s.sbx = s.bx;
+        s.hy = 0; s.hx = 0;
+        banner.classList.add('is-dragging');
+        banner.setPointerCapture(e.pointerId);
+      });
+
+      banner.addEventListener('pointermove', (e) => {
+        const r = banner.getBoundingClientRect();
+        if (s.dragging) {
+          s.by = clamp(s.sby + ((e.clientX - s.sx) / r.width) * 72, -30, 30);
+          s.bx = clamp(s.sbx - ((e.clientY - s.sy) / r.height) * 24, -9, 9);
+        } else {
+          s.hovered = true;
+          const nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+          const ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
+          s.hy = clamp(nx * 15, -15, 15);
+          s.hx = clamp(-ny * 5.5, -5.5, 5.5);
+        }
+      });
+
+      const endDrag = (e) => {
+        if (!s.dragging) return;
+        s.dragging = false;
+        banner.classList.remove('is-dragging');
+        if (banner.hasPointerCapture(e.pointerId)) banner.releasePointerCapture(e.pointerId);
+      };
+
+      banner.addEventListener('pointerup', endDrag);
+      banner.addEventListener('pointercancel', endDrag);
+      banner.addEventListener('pointerleave', () => { s.hovered = false; s.hy = 0; s.hx = 0; });
+
+      spinBtn.addEventListener('click', () => {
+        s.auto = !s.auto;
+        spinBtn.textContent = s.auto ? 'Dừng' : 'Tự xoay';
+      });
+
+      resetBtn.addEventListener('click', () => {
+        s.by = 0; s.bx = 0; s.hy = 0; s.hx = 0; s.phase = 0; s.auto = false;
+        spinBtn.textContent = 'Tự xoay';
+      });
+
+      function tick() {
+        let iy = 0, ix = 0;
+        if (s.auto && !s.dragging && !s.hovered) {
+          s.phase += 0.011;
+          iy = Math.sin(s.phase) * 17;
+          ix = Math.cos(s.phase * 0.5) * 2;
+        }
+        const ty = clamp(s.by + s.hy + iy, -30, 30);
+        const tx = clamp(s.bx + s.hx + ix, -9, 9);
+        s.vy = (s.vy + (ty - s.cy) * 0.062) * 0.81;
+        s.vx = (s.vx + (tx - s.cx) * 0.062) * 0.81;
+        s.cy += s.vy; s.cx += s.vx;
+
+        plane.style.transform = `translate3d(${(s.cy * 0.45).toFixed(2)}px,0,0) rotateX(${s.cx.toFixed(3)}deg) rotateY(${s.cy.toFixed(3)}deg)`;
+        plane.style.filter = `drop-shadow(${(-s.cy * 1.25).toFixed(1)}px ${(18 + s.cx * 0.8).toFixed(1)}px 26px rgba(90,62,104,0.14))`;
+        const lo = s.cy < -3 ? clamp((Math.abs(s.cy) - 3) / 17, 0, 1) : 0;
+        const ro = s.cy > 3 ? clamp((s.cy - 3) / 17, 0, 1) : 0;
+        layerCenter.style.opacity = clamp(1 - Math.max(lo, ro) * 0.92, 0, 1).toFixed(3);
+        layerLeft.style.opacity = lo.toFixed(3);
+        layerRight.style.opacity = ro.toFixed(3);
+        floorShadow.style.transform = `translateX(${(-s.cy * 1.6).toFixed(1)}px)`;
+
+        const d = Math.round(s.cy);
+        angleLabel.textContent = `${d > 0 ? '+' + d : d}°`;
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>

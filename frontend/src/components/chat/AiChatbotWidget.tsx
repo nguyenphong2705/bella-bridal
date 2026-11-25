@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MessageCircle, Send, Sparkles, UserCheck, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useSite } from '@/contexts/SiteContext';
+import { formatVnPhone } from '@/lib/format';
 
 interface Msg {
   role: 'user' | 'assistant';
@@ -44,7 +45,10 @@ export default function AiChatbotWidget() {
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Xin lỗi, hệ thống tư vấn đang bận. Bạn có thể gọi hotline 0901 234 567 nhé!' },
+        {
+          role: 'assistant',
+          content: `Xin lỗi, hệ thống tư vấn đang bận. Bạn có thể gọi hotline ${formatVnPhone(settings.hotline)} nhé!`,
+        },
       ]);
     } finally {
       setSending(false);

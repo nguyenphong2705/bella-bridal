@@ -18,6 +18,29 @@ export function verifyPassword(password: string, stored: string): boolean {
   return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(computed, 'hex'));
 }
 
+export function formatVnPhonePlus84(phone?: string | null): string {
+  if (!phone) return '+84 901 234 567';
+  const trimmed = phone.trim();
+  if (trimmed.includes('@')) return trimmed;
+  const digits = trimmed.replace(/\D/g, '');
+  if (!digits) return trimmed;
+
+  let national = digits;
+  if (digits.startsWith('84') && digits.length >= 10) {
+    national = digits.slice(2);
+  } else if (digits.startsWith('0') && digits.length >= 9) {
+    national = digits.slice(1);
+  }
+
+  if (national.length === 9) {
+    return `+84 ${national.slice(0, 3)} ${national.slice(3, 6)} ${national.slice(6)}`;
+  }
+  if (national.length === 10) {
+    return `+84 ${national.slice(0, 2)} ${national.slice(2, 6)} ${national.slice(6)}`;
+  }
+  return `+84 ${national}`;
+}
+
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   public db!: DatabaseSync;
@@ -30,6 +53,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     this.db.exec('PRAGMA foreign_keys = ON;');
     this.migrate();
     this.seedIfEmpty();
+    this.normalizeAllPhonesToPlus84();
   }
 
   onModuleDestroy() {
@@ -241,7 +265,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       const adminRes = insertUser.run(
         'Quản trị viên BellaBridal',
         'admin@bellabridal.vn',
-        '0901234567',
+        '+84 901 234 567',
         hashPassword('Bella@2026!'),
         'admin'
       );
@@ -249,7 +273,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       insertUser.run(
         'Minh Anh - Bridal Stylist',
         'stylist@bellabridal.vn',
-        '0907654321',
+        '+84 907 654 321',
         hashPassword('Stylist@2026!'),
         'staff'
       );
@@ -698,12 +722,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       );
       insertAppt.run(
-        'BB-20261126-01', 'Nguyễn Thu Hà', '0912345678', 'thuha@example.com',
+        'BB-20261126-01', 'Nguyễn Thu Hà', '+84 912 345 678', 'thuha@example.com',
         d1, '10:30', firstServiceId, firstDressId,
         'Mong muốn thử thêm 2 mẫu váy chữ A nhẹ nhàng.', 'confirmed', 14500000, adminId, new Date().toISOString()
       );
       insertAppt.run(
-        'BB-20261127-02', 'Trần Minh Châu', '0987654321', 'minhchau@example.com',
+        'BB-20261127-02', 'Trần Minh Châu', '+84 987 654 321', 'minhchau@example.com',
         d2, '15:00', firstServiceId, null,
         'Tư vấn gói cưới trọn gói tháng 12.', 'pending', 29000000, null, null
       );
@@ -714,12 +738,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         ['brand_tagline', 'Luxury Wedding Studio & Haute Couture Bridal', 'general'],
         ['logo_url', '', 'general'],
         ['lookbook_video_url', 'https://assets.mixkit.co/videos/preview/mixkit-bride-in-a-wedding-dress-posing-42874-large.mp4', 'general'],
-        ['hotline', '0901 234 567', 'contact'],
+        ['hotline', '+84 901 234 567', 'contact'],
         ['email', 'concierge@bellabridal.vn', 'contact'],
         ['address', '128 Đồng Khởi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh', 'contact'],
         ['working_hours', '09:00 - 21:00 (Thứ 2 - Chủ Nhật)', 'contact'],
-        ['zalo_url', 'https://zalo.me/0901234567', 'contact'],
-        ['zalo_phone', '0901234567', 'contact'],
+        ['zalo_url', 'https://zalo.me/84901234567', 'contact'],
+        ['zalo_phone', '+84 901 234 567', 'contact'],
         ['facebook_url', 'https://facebook.com/bellabridal.vn', 'contact'],
         ['instagram_url', 'https://instagram.com/bellabridal.vn', 'contact'],
         ['google_maps_embed', 'https://www.google.com/maps?q=128+Dong+Khoi,+Quan+1,+Ho+Chi+Minh&output=embed', 'contact'],
@@ -747,6 +771,56 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       const insertFaq = this.db.prepare('INSERT INTO chatbot_faqs (question, answer, category, keywords, is_active, sort_order) VALUES (?, ?, ?, ?, 1, ?)');
       for (const f of faqs) {
         insertFaq.run(...f);
+      }
+    });
+  }
+
+  private normalizeAllPhonesToPlus84() {
+    this.transaction(() => {
+      const settingRows = this.db
+        .prepare("SELECT key, value FROM site_settings WHERE key IN ('hotline', 'zalo_phone', 'zalo_url')")
+        .all() as { key: string; value: string | null }[];
+
+      const updateSetting = this.db.prepare('UPDATE site_settings SET value = ? WHERE key = ?');
+      for (const row of settingRows) {
+        if (!row.value) continue;
+        if (row.key === 'zalo_url') {
+          const updatedUrl = row.value.replace(/zalo\.me\/0(\d+)/g, 'zalo.me/84$1');
+          if (updatedUrl !== row.value) updateSetting.run(updatedUrl, row.key);
+        } else {
+          const formatted = formatVnPhonePlus84(row.value);
+          if (formatted !== row.value) updateSetting.run(formatted, row.key);
+        }
+      }
+
+      const users = this.db.prepare('SELECT id, phone FROM users WHERE phone IS NOT NULL').all() as {
+        id: number;
+        phone: string;
+      }[];
+      const updateUser = this.db.prepare('UPDATE users SET phone = ? WHERE id = ?');
+      for (const u of users) {
+        const formatted = formatVnPhonePlus84(u.phone);
+        if (formatted !== u.phone) updateUser.run(formatted, u.id);
+      }
+
+      const appts = this.db.prepare('SELECT id, customer_phone FROM appointments').all() as {
+        id: number;
+        customer_phone: string;
+      }[];
+      const updateAppt = this.db.prepare('UPDATE appointments SET customer_phone = ? WHERE id = ?');
+      for (const a of appts) {
+        const formatted = formatVnPhonePlus84(a.customer_phone);
+        if (formatted !== a.customer_phone) updateAppt.run(formatted, a.id);
+      }
+
+      const contacts = this.db.prepare('SELECT id, phone FROM contact_messages').all() as {
+        id: number;
+        phone: string;
+      }[];
+      const updateContact = this.db.prepare('UPDATE contact_messages SET phone = ? WHERE id = ?');
+      for (const c of contacts) {
+        const formatted = formatVnPhonePlus84(c.phone);
+        if (formatted !== c.phone) updateContact.run(formatted, c.id);
       }
     });
   }

@@ -51,7 +51,7 @@ export class NotificationService {
       return `[BellaBridal] Lịch hẹn ${p.bookingCode} đã ĐƯỢC XÁC NHẬN lúc ${p.timeSlot} ngày ${p.appointmentDate} (${item}). Hân hạnh đón tiếp nàng dâu ${p.customerName} tại 128 Đồng Khởi, Q.1!`;
     }
     if (p.event === 'booking_cancelled') {
-      return `[BellaBridal] Lịch hẹn ${p.bookingCode} ngày ${p.appointmentDate} lúc ${p.timeSlot} đã được hủy. Liên hệ hotline 0901 234 567 nếu bạn cần đặt lại lịch.`;
+      return `[BellaBridal] Lịch hẹn ${p.bookingCode} ngày ${p.appointmentDate} lúc ${p.timeSlot} đã được hủy. Liên hệ hotline +84 901 234 567 nếu bạn cần đặt lại lịch.`;
     }
     return `[BellaBridal] Cảm ơn ${p.customerName} đã đặt lịch hẹn ${p.bookingCode} lúc ${p.timeSlot} ngày ${p.appointmentDate} (${item}). Stylist sẽ liên hệ xác nhận sớm nhất!`;
   }
@@ -186,7 +186,7 @@ export class NotificationService {
               <h2 style="color:#A87C73; margin-top:0;">BellaBridal Studio</h2>
               <p>${text}</p>
               <hr style="border:none; border-top:1px solid #EBCFD5; margin:16px 0;" />
-              <p style="font-size:12px; color:#7A6F6F;">128 Đồng Khởi, Quận 1, TP. Hồ Chí Minh • Hotline: 0901 234 567</p>
+              <p style="font-size:12px; color:#7A6F6F;">128 Đồng Khởi, Quận 1, TP. Hồ Chí Minh • Hotline: +84 901 234 567</p>
             </div>
           `,
         });

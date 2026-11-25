@@ -22,7 +22,7 @@ test('Health, Real-time Availability, Double-Booking Lock & Notifications', asyn
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       customer_name: 'Test Bride',
-      customer_phone: '0901234567',
+      customer_phone: '+84 901 234 567',
       customer_email: 'bride@example.com',
       appointment_date: testDate,
       time_slot: '10:30',
@@ -40,7 +40,7 @@ test('Health, Real-time Availability, Double-Booking Lock & Notifications', asyn
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       customer_name: 'Second Bride',
-      customer_phone: '0909998888',
+      customer_phone: '+84 909 998 888',
       appointment_date: testDate,
       time_slot: '10:30',
     }),

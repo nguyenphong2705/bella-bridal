@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Clock, Mail, MapPin, Phone, Send } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useSite } from '@/contexts/SiteContext';
+import { formatVnPhone, toTelHref } from '@/lib/format';
 
 export default function ContactPage() {
   const { settings } = useSite();
@@ -45,7 +46,9 @@ export default function ContactPage() {
           </p>
           <p className="flex items-center gap-3 text-sm text-muted">
             <Phone className="h-4 w-4 shrink-0 text-rose-gold" />
-            <span>{settings.hotline || '0901 234 567'}</span>
+            <a href={toTelHref(settings.hotline)} className="hover:text-rose-gold-dark">
+              {formatVnPhone(settings.hotline)}
+            </a>
           </p>
           <p className="flex items-center gap-3 text-sm text-muted">
             <Mail className="h-4 w-4 shrink-0 text-rose-gold" />
@@ -61,7 +64,7 @@ export default function ContactPage() {
           <h2 className="font-serif text-2xl font-semibold text-charcoal">Gửi lời nhắn tư vấn</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Họ và tên *" className="luxury-input" required />
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Số điện thoại *" className="luxury-input" required />
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Số điện thoại (+84...) *" className="luxury-input" required />
           </div>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="luxury-input" />
           <textarea rows={4} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Nội dung cần tư vấn..." className="luxury-input" required />

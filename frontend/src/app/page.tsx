@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, CheckCircle2, Film, Sparkles, Star } from 'lucide-react';
+import { CheckCircle2, Film, Star } from 'lucide-react';
 import DressCard from '@/components/dress/DressCard';
+import HeroDressShowcase3D from '@/components/dress/HeroDressShowcase3D';
 import { serverFetch } from '@/lib/api';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatVnPhone } from '@/lib/format';
 import type { BlogPost, Dress, DressCategory, ReviewItem, ServiceItem, SiteSettings } from '@/types';
 
 interface HomePayload {
@@ -31,7 +32,7 @@ export default async function HomePage() {
     '@type': 'BridalShop',
     name: data?.settings?.brand_name || 'BellaBridal Studio',
     description: data?.settings?.seo_description || 'Studio áo cưới cao cấp hàng đầu tại TP.HCM.',
-    telephone: data?.settings?.hotline || '0901 234 567',
+    telephone: formatVnPhone(data?.settings?.hotline || '+84 901 234 567'),
     address: {
       '@type': 'PostalAddress',
       streetAddress: data?.settings?.address || '128 Đồng Khởi, Quận 1, TP. Hồ Chí Minh',
@@ -44,57 +45,8 @@ export default async function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Hero Section — Nền trắng ngà & kem ấm (60%) giúp ảnh cưới nổi bật */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-ivory via-cream/60 to-white">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-20">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-lavender-deep bg-soft-lavender px-3.5 py-1.5 text-xs font-semibold tracking-wider text-plum">
-              <Sparkles className="h-3.5 w-3.5" /> HAUTE COUTURE BRIDAL 2026
-            </span>
-            <h1 className="mt-5 font-serif text-4xl font-semibold leading-tight text-charcoal sm:text-5xl lg:text-6xl">
-              Vẻ Đẹp Tinh Khôi Cho Ngày Trọng Đại
-            </h1>
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">
-              Khám phá hơn 250+ tuyệt tác váy cưới nhập khẩu và thiết kế độc bản tại BellaBridal. Trải nghiệm thử váy
-              riêng tư 1-1 cùng Bridal Stylist với hệ thống đặt lịch thời gian thực.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/dat-lich" className="btn-primary">
-                <Calendar className="h-4 w-4" />
-                <span>Đặt lịch thử váy ngay</span>
-              </Link>
-              <Link href="/bo-suu-tap" className="btn-outline">
-                <span>Xem bộ sưu tập</span>
-              </Link>
-            </div>
-            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-blush-pink/60 pt-6">
-              <div>
-                <p className="font-serif text-2xl font-semibold text-charcoal">250+</p>
-                <p className="text-xs text-muted">Thiết kế độc quyền</p>
-              </div>
-              <div>
-                <p className="font-serif text-2xl font-semibold text-charcoal">5.000+</p>
-                <p className="text-xs text-muted">Cô dâu hạnh phúc</p>
-              </div>
-              <div>
-                <p className="font-serif text-2xl font-semibold text-charcoal">1 - 1</p>
-                <p className="text-xs text-muted">Phòng thử VIP riêng tư</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-blush-pink/60 shadow-luxury">
-            <Image
-              src="https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=1200&q=85"
-              alt="BellaBridal Luxury Wedding Dress"
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
-            />
-          </div>
-        </div>
-      </section>
+      {/* Hero Banner Full-Size — Thông tin góc trái, Váy cưới xoay 3D bên phải */}
+      <HeroDressShowcase3D />
 
       {/* Lookbook Video Showcase — Khối phụ tím nhạt dịu */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
