@@ -45,7 +45,7 @@ export default async function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Hero Banner Full-Size — Thông tin góc trái, Váy cưới xoay 3D bên phải */}
+      {/* Hero Banner — Thông tin góc trái, Chân dung cô dâu váy trắng bên phải */}
       <HeroDressShowcase3D />
 
       {/* Lookbook Video Showcase — Khối phụ tím nhạt dịu */}

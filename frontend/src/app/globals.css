@@ -32,3 +32,98 @@
     @apply w-full rounded-lg border border-lavender-deep bg-white px-4 py-2.5 text-sm text-charcoal placeholder:text-muted/60 transition-colors focus:border-plum focus:outline-none focus:ring-2 focus:ring-soft-lavender;
   }
 }
+
+/* ===== BellaBridal Luxury Reload & Page Transition Animations ===== */
+@keyframes bridal-ring-draw {
+  0% {
+    stroke-dashoffset: 260;
+    opacity: 0.25;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes bridal-halo-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bridal-sparkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.75) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18) rotate(18deg);
+  }
+}
+
+@keyframes bridal-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes bridal-page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-bridal-ring {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  animation: bridal-ring-draw 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-bridal-halo {
+  animation: bridal-halo-spin 18s linear infinite;
+}
+
+.animate-bridal-sparkle {
+  animation: bridal-sparkle 2.2s ease-in-out infinite;
+}
+
+.animate-bridal-shimmer {
+  background-size: 200% 100%;
+  animation: bridal-shimmer 1.8s linear infinite;
+}
+
+.animate-bridal-page-enter {
+  animation: bridal-page-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.bridal-curtain-ease {
+  transition-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bridal-ring,
+  .animate-bridal-halo,
+  .animate-bridal-sparkle,
+  .animate-bridal-shimmer,
+  .animate-bridal-page-enter {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
