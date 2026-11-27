@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { DatabaseService } from '../database/database.service';
 
@@ -26,7 +26,7 @@ export interface NotificationResult {
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(@Inject(DatabaseService) private readonly db: DatabaseService) {}
 
   async dispatchBookingNotifications(payload: AppointmentNotificationPayload): Promise<NotificationResult[]> {
     const results: NotificationResult[] = [];

@@ -4,17 +4,24 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   NotFoundException,
   Param,
   Post,
   Put,
   Query,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { AuthGuard, AuthUser, Roles, RolesGuard } from '../auth/auth.guard';
 import { AppointmentsService } from '../appointments/appointments.service';
-import { DatabaseService } from '../database/database.service';
+import { DatabaseService, slugifyVi } from '../database/database.service';
 import { NotificationService } from '../notifications/notification.service';
 
 @Controller('api/v1/admin')
@@ -22,9 +29,9 @@ import { NotificationService } from '../notifications/notification.service';
 @Roles('admin', 'staff')
 export class AdminController {
   constructor(
-    private readonly db: DatabaseService,
-    private readonly appointmentsService: AppointmentsService,
-    private readonly notifications: NotificationService
+    @Inject(DatabaseService) private readonly db: DatabaseService,
+    @Inject(AppointmentsService) private readonly appointmentsService: AppointmentsService,
+    @Inject(NotificationService) private readonly notifications: NotificationService
   ) {}
 
   @Get('dashboard')
@@ -100,14 +107,7 @@ export class AdminController {
     if (!name || !code || !categoryId) {
       throw new BadRequestException({ message: 'Vui lòng nhập mã váy, tên váy và danh mục.' });
     }
-    const slug =
-      String(body.slug || '').trim() ||
-      name
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+    const slug = String(body.slug || '').trim() ? slugifyVi(String(body.slug)) : slugifyVi(name);
 
     const res = this.db.db
       .prepare(
@@ -173,6 +173,20 @@ export class AdminController {
         dressId
       );
 
+    if (body.image_url) {
+      const url = String(body.image_url).trim();
+      const primary = this.db.db
+        .prepare('SELECT id FROM dress_images WHERE dress_id = ? AND is_primary = 1')
+        .get(dressId) as { id: number } | undefined;
+      if (primary) {
+        this.db.db.prepare('UPDATE dress_images SET image_url = ? WHERE id = ?').run(url, primary.id);
+      } else {
+        this.db.db
+          .prepare('INSERT INTO dress_images (dress_id, image_url, alt_text, is_primary, sort_order) VALUES (?, ?, ?, 1, 0)')
+          .run(dressId, url, String(body.name ?? existing.name));
+      }
+    }
+
     return { data: this.db.db.prepare('SELECT * FROM dresses WHERE id = ?').get(dressId) };
   }
 
@@ -186,6 +200,43 @@ export class AdminController {
   @Get('categories')
   listCategories() {
     return { data: this.db.db.prepare('SELECT * FROM dress_categories ORDER BY sort_order ASC').all() };
+  }
+
+  @Post('categories')
+  createCategory(@Body() body: Record<string, unknown>) {
+    const name = String(body.name || '').trim();
+    if (!name) throw new BadRequestException({ message: 'Vui lòng nhập tên danh mục.' });
+    const slug = String(body.slug || '').trim() ? slugifyVi(String(body.slug)) : slugifyVi(name);
+    const res = this.db.db
+      .prepare('INSERT INTO dress_categories (name, slug, description, image, sort_order, is_active) VALUES (?, ?, ?, ?, ?, 1)')
+      .run(name, slug, String(body.description || ''), String(body.image || ''), Number(body.sort_order ?? 0));
+    return { data: this.db.db.prepare('SELECT * FROM dress_categories WHERE id = ?').get(Number(res.lastInsertRowid)) };
+  }
+
+  @Put('categories/:id')
+  updateCategory(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+    const catId = Number(id);
+    const existing = this.db.db.prepare('SELECT * FROM dress_categories WHERE id = ?').get(catId) as
+      | Record<string, unknown>
+      | undefined;
+    if (!existing) throw new NotFoundException({ message: 'Không tìm thấy danh mục.' });
+    this.db.db
+      .prepare('UPDATE dress_categories SET name = ?, description = ?, image = ?, sort_order = ?, is_active = ? WHERE id = ?')
+      .run(
+        String(body.name ?? existing.name),
+        String(body.description ?? existing.description ?? ''),
+        String(body.image ?? existing.image ?? ''),
+        Number(body.sort_order ?? existing.sort_order ?? 0),
+        body.is_active !== undefined ? (body.is_active ? 1 : 0) : Number(existing.is_active ?? 1),
+        catId
+      );
+    return { data: this.db.db.prepare('SELECT * FROM dress_categories WHERE id = ?').get(catId) };
+  }
+
+  @Delete('categories/:id')
+  deleteCategory(@Param('id') id: string) {
+    this.db.db.prepare('DELETE FROM dress_categories WHERE id = ?').run(Number(id));
+    return { message: 'Đã xóa danh mục.' };
   }
 
   // --- Appointments ---
@@ -296,13 +347,7 @@ export class AdminController {
   createService(@Body() body: Record<string, unknown>) {
     const name = String(body.name || '').trim();
     if (!name) throw new BadRequestException({ message: 'Vui lòng nhập tên dịch vụ.' });
-    const slug =
-      String(body.slug || '').trim() ||
-      name
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-');
+    const slug = String(body.slug || '').trim() ? slugifyVi(String(body.slug)) : slugifyVi(name);
     const res = this.db.db
       .prepare(
         `INSERT INTO services (name, slug, short_description, description, price_from, price_to, duration_note, image, icon, is_featured, is_active)
@@ -323,6 +368,33 @@ export class AdminController {
     return { data: this.db.db.prepare('SELECT * FROM services WHERE id = ?').get(Number(res.lastInsertRowid)) };
   }
 
+  @Put('services/:id')
+  updateService(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+    const existing = this.db.db.prepare('SELECT * FROM services WHERE id = ?').get(Number(id)) as
+      | Record<string, unknown>
+      | undefined;
+    if (!existing) throw new NotFoundException({ message: 'Không tìm thấy dịch vụ.' });
+    this.db.db
+      .prepare(
+        `UPDATE services
+         SET name = ?, short_description = ?, description = ?, price_from = ?, price_to = ?, duration_note = ?, image = ?, is_featured = ?, is_active = ?
+         WHERE id = ?`
+      )
+      .run(
+        String(body.name ?? existing.name),
+        String(body.short_description ?? existing.short_description ?? ''),
+        String(body.description ?? existing.description ?? ''),
+        Number(body.price_from ?? existing.price_from ?? 0),
+        Number(body.price_to ?? existing.price_to ?? 0),
+        String(body.duration_note ?? existing.duration_note ?? ''),
+        String(body.image ?? existing.image ?? ''),
+        body.is_featured !== undefined ? (body.is_featured ? 1 : 0) : Number(existing.is_featured ?? 0),
+        body.is_active !== undefined ? (body.is_active ? 1 : 0) : Number(existing.is_active ?? 1),
+        Number(id)
+      );
+    return { data: this.db.db.prepare('SELECT * FROM services WHERE id = ?').get(Number(id)) };
+  }
+
   @Delete('services/:id')
   deleteService(@Param('id') id: string) {
     this.db.db.prepare('DELETE FROM services WHERE id = ?').run(Number(id));
@@ -339,13 +411,7 @@ export class AdminController {
   createPost(@Body() body: Record<string, unknown>, @Req() req: { user: AuthUser }) {
     const title = String(body.title || '').trim();
     if (!title) throw new BadRequestException({ message: 'Vui lòng nhập tiêu đề.' });
-    const slug =
-      String(body.slug || '').trim() ||
-      title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-');
+    const slug = String(body.slug || '').trim() ? slugifyVi(String(body.slug)) : slugifyVi(title);
     const res = this.db.db
       .prepare(
         `INSERT INTO blog_posts (title, slug, category, excerpt, content, thumbnail, author_id, status, published_at)
@@ -364,10 +430,134 @@ export class AdminController {
     return { data: this.db.db.prepare('SELECT * FROM blog_posts WHERE id = ?').get(Number(res.lastInsertRowid)) };
   }
 
+  @Put('posts/:id')
+  updatePost(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+    const existing = this.db.db.prepare('SELECT * FROM blog_posts WHERE id = ?').get(Number(id)) as
+      | Record<string, unknown>
+      | undefined;
+    if (!existing) throw new NotFoundException({ message: 'Không tìm thấy bài viết.' });
+    this.db.db
+      .prepare(
+        `UPDATE blog_posts
+         SET title = ?, category = ?, excerpt = ?, content = ?, thumbnail = ?, status = ?
+         WHERE id = ?`
+      )
+      .run(
+        String(body.title ?? existing.title),
+        String(body.category ?? existing.category ?? 'Kinh nghiệm cưới'),
+        String(body.excerpt ?? existing.excerpt ?? ''),
+        String(body.content ?? existing.content ?? ''),
+        String(body.thumbnail ?? existing.thumbnail ?? ''),
+        String(body.status ?? existing.status ?? 'published'),
+        Number(id)
+      );
+    return { data: this.db.db.prepare('SELECT * FROM blog_posts WHERE id = ?').get(Number(id)) };
+  }
+
   @Delete('posts/:id')
   deletePost(@Param('id') id: string) {
     this.db.db.prepare('DELETE FROM blog_posts WHERE id = ?').run(Number(id));
     return { message: 'Đã xóa bài viết.' };
+  }
+
+  // --- Hero Banners ---
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: (_req, _file, cb) => {
+          const uploadDir = path.resolve(process.cwd(), '../frontend/public/uploads/banners');
+          fs.mkdirSync(uploadDir, { recursive: true });
+          cb(null, uploadDir);
+        },
+        filename: (_req, file, cb) => {
+          const ext = path.extname(file.originalname || '').toLowerCase() || '.png';
+          const safeExt = ['.png', '.jpg', '.jpeg', '.webp', '.avif'].includes(ext) ? ext : '.png';
+          cb(null, `banner-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${safeExt}`);
+        },
+      }),
+      limits: { fileSize: 10 * 1024 * 1024 },
+    })
+  )
+  uploadBannerImage(@UploadedFile() file?: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException({ message: 'Vui lòng chọn file ảnh hợp lệ.' });
+    }
+    return {
+      url: `/uploads/banners/${file.filename}`,
+      filename: file.filename,
+    };
+  }
+
+  @Get('banners')
+  listBanners() {
+    return { data: this.db.db.prepare('SELECT * FROM hero_banners ORDER BY sort_order ASC, id ASC').all() };
+  }
+
+  @Post('banners')
+  createBanner(@Body() body: Record<string, unknown>) {
+    const title = String(body.title || '').trim();
+    const imageUrl = String(body.image_url || '').trim();
+    if (!title || !imageUrl) {
+      throw new BadRequestException({ message: 'Vui lòng nhập tiêu đề và đường dẫn ảnh banner.' });
+    }
+    const res = this.db.db
+      .prepare(
+        `INSERT INTO hero_banners (badge, title, subtitle, image_url, bg_gradient, cta_text, cta_link, secondary_cta_text, secondary_cta_link, sort_order, is_active)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        String(body.badge || 'HAUTE COUTURE BRIDAL 2026'),
+        title,
+        String(body.subtitle || ''),
+        imageUrl,
+        String(
+          body.bg_gradient ||
+            'linear-gradient(180deg, #B59CA0 0%, #C8ADA8 24%, #D7B8B0 48%, #CE9F97 72%, #EADBD6 92%, #DFCCC6 100%)'
+        ),
+        String(body.cta_text || 'Đặt lịch thử váy ngay'),
+        String(body.cta_link || '/dat-lich'),
+        String(body.secondary_cta_text || 'Xem bộ sưu tập'),
+        String(body.secondary_cta_link || '/bo-suu-tap'),
+        Number(body.sort_order ?? 0),
+        body.is_active === false || body.is_active === 0 ? 0 : 1
+      );
+    return { data: this.db.db.prepare('SELECT * FROM hero_banners WHERE id = ?').get(Number(res.lastInsertRowid)) };
+  }
+
+  @Put('banners/:id')
+  updateBanner(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+    const existing = this.db.db.prepare('SELECT * FROM hero_banners WHERE id = ?').get(Number(id)) as
+      | Record<string, unknown>
+      | undefined;
+    if (!existing) throw new NotFoundException({ message: 'Không tìm thấy banner.' });
+    this.db.db
+      .prepare(
+        `UPDATE hero_banners
+         SET badge = ?, title = ?, subtitle = ?, image_url = ?, bg_gradient = ?, cta_text = ?, cta_link = ?, secondary_cta_text = ?, secondary_cta_link = ?, sort_order = ?, is_active = ?
+         WHERE id = ?`
+      )
+      .run(
+        String(body.badge ?? existing.badge),
+        String(body.title ?? existing.title),
+        String(body.subtitle ?? existing.subtitle ?? ''),
+        String(body.image_url ?? existing.image_url),
+        String(body.bg_gradient ?? existing.bg_gradient ?? ''),
+        String(body.cta_text ?? existing.cta_text),
+        String(body.cta_link ?? existing.cta_link),
+        String(body.secondary_cta_text ?? existing.secondary_cta_text),
+        String(body.secondary_cta_link ?? existing.secondary_cta_link),
+        Number(body.sort_order ?? existing.sort_order ?? 0),
+        body.is_active !== undefined ? (body.is_active ? 1 : 0) : Number(existing.is_active ?? 1),
+        Number(id)
+      );
+    return { data: this.db.db.prepare('SELECT * FROM hero_banners WHERE id = ?').get(Number(id)) };
+  }
+
+  @Delete('banners/:id')
+  deleteBanner(@Param('id') id: string) {
+    this.db.db.prepare('DELETE FROM hero_banners WHERE id = ?').run(Number(id));
+    return { message: 'Đã xóa banner.' };
   }
 
   // --- Reviews ---

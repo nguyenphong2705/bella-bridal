@@ -9,7 +9,6 @@ import { formatVnPhone, toTelHref } from '@/lib/format';
 
 const navLinks = [
   { href: '/', label: 'Trang chủ' },
-  { href: '/bo-suu-tap', label: 'Bộ sưu tập' },
   { href: '/dich-vu', label: 'Dịch vụ' },
   { href: '/ve-chung-toi', label: 'Về chúng tôi' },
   { href: '/tin-tuc', label: 'Tạp chí cưới' },
@@ -49,8 +48,8 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b border-lavender-deep/80 transition-all duration-300 backdrop-blur-md ${
-        scrolled ? 'bg-lavender-deep/95 shadow-card' : 'bg-soft-lavender/90'
+      className={`sticky top-0 z-40 border-b border-[#EAE2DF] transition-all duration-300 backdrop-blur-md ${
+        scrolled ? 'bg-white/95 shadow-card' : 'bg-[#FAF8F7]/95'
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">

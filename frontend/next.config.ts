@@ -11,6 +11,17 @@ const nextConfig: NextConfig = {
     ],
     formats: ['image/avif', 'image/webp'],
   },
+  async redirects() {
+    return [
+      { source: '/admin/login', destination: '/admin/dang-nhap', permanent: false },
+      { source: '/admin/appointments', destination: '/admin/lich-hen', permanent: false },
+      { source: '/admin/dresses', destination: '/admin/vay-cuoi', permanent: false },
+      { source: '/admin/services', destination: '/admin/dich-vu', permanent: false },
+      { source: '/admin/posts', destination: '/admin/tap-chi', permanent: false },
+      { source: '/admin/banners', destination: '/admin/banner', permanent: false },
+      { source: '/admin/settings', destination: '/admin/cau-hinh', permanent: false },
+    ];
+  },
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
     return [

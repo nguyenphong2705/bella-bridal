@@ -5,8 +5,6 @@ import Header from './Header';
 import Footer from './Footer';
 import BridalPreloader from './BridalPreloader';
 import AiChatbotWidget from '../chat/AiChatbotWidget';
-import BookingFloatingButton from '../chat/BookingFloatingButton';
-import ZaloFloatingButton from '../chat/ZaloFloatingButton';
 
 export default function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -24,8 +22,6 @@ export default function PublicShell({ children }: { children: React.ReactNode })
         {children}
       </main>
       <Footer />
-      <ZaloFloatingButton />
-      <BookingFloatingButton />
       <AiChatbotWidget />
     </div>
   );

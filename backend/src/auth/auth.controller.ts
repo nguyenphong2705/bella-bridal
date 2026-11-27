@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { DatabaseService, verifyPassword } from '../database/database.service';
 import { AuthGuard } from './auth.guard';
 
 @Controller('api/v1/auth')
 export class AuthController {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(@Inject(DatabaseService) private readonly db: DatabaseService) {}
 
   @Post('login')
   login(@Body() body: { email?: string; password?: string }) {

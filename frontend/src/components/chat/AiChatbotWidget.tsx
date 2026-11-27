@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import { MessageCircle, Send, Sparkles, UserCheck, X } from 'lucide-react';
+import { Calendar, MessageCircle, Send, Sparkles, UserCheck, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useSite } from '@/contexts/SiteContext';
 import { formatVnPhone } from '@/lib/format';
@@ -26,7 +27,7 @@ export default function AiChatbotWidget() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
 
-  if (settings.chatbot_enabled === '0') return null;
+  const chatbotEnabled = settings.chatbot_enabled !== '0';
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,19 +65,45 @@ export default function AiChatbotWidget() {
     }
   };
 
+  const zaloUrl = settings.zalo_url || 'https://zalo.me/84901234567';
+
   return (
     <div className="fixed bottom-5 right-5 z-50">
       {!open ? (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-full bg-plum px-4 py-3 text-sm font-medium text-white shadow-luxury transition-transform hover:scale-105 hover:bg-plum-dark"
-          aria-label="Mở trợ lý AI BellaBridal"
-        >
-          <Sparkles className="h-4 w-4" />
-          <span className="hidden sm:inline">Tư vấn AI 24/7</span>
-          <MessageCircle className="h-4 w-4 sm:hidden" />
-        </button>
+        <div className="flex items-center divide-x divide-white/20 rounded-full border border-white/20 bg-plum p-1 text-white shadow-luxury backdrop-blur-md">
+          <a
+            href={zaloUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-9 items-center gap-1.5 rounded-l-full px-3 text-xs font-medium text-white transition-colors hover:bg-plum-dark"
+            title="Chat Zalo với BellaBridal"
+            aria-label="Chat Zalo với BellaBridal"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+            <span>Zalo</span>
+          </a>
+          <Link
+            href="/dat-lich"
+            className={`flex h-9 items-center gap-1.5 px-3 text-xs font-medium text-white transition-colors hover:bg-plum-dark ${
+              !chatbotEnabled ? 'rounded-r-full' : ''
+            }`}
+            title="Đặt lịch thử váy BellaBridal"
+          >
+            <Calendar className="h-3.5 w-3.5" />
+            <span>Đặt lịch</span>
+          </Link>
+          {chatbotEnabled && (
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="flex h-9 items-center gap-1.5 rounded-r-full px-3.5 text-xs font-medium text-white transition-colors hover:bg-plum-dark"
+              aria-label="Mở trợ lý AI BellaBridal"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Tư vấn AI</span>
+            </button>
+          )}
+        </div>
       ) : (
         <div className="flex h-[440px] w-[340px] flex-col overflow-hidden rounded-2xl border border-blush-pink bg-ivory shadow-2xl sm:w-[370px]">
           <div className="flex items-center justify-between bg-plum px-4 py-3 text-white">

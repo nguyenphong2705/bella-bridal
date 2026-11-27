@@ -5,7 +5,7 @@ import DressCard from '@/components/dress/DressCard';
 import HeroDressShowcase3D from '@/components/dress/HeroDressShowcase3D';
 import { serverFetch } from '@/lib/api';
 import { formatCurrency, formatVnPhone } from '@/lib/format';
-import type { BlogPost, Dress, DressCategory, ReviewItem, ServiceItem, SiteSettings } from '@/types';
+import type { BlogPost, Dress, DressCategory, HeroBanner, ReviewItem, ServiceItem, SiteSettings } from '@/types';
 
 interface HomePayload {
   categories: DressCategory[];
@@ -14,6 +14,7 @@ interface HomePayload {
   reviews: ReviewItem[];
   posts: BlogPost[];
   settings: SiteSettings;
+  banners?: HeroBanner[];
 }
 
 export default async function HomePage() {
@@ -45,12 +46,12 @@ export default async function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Hero Banner — Thông tin góc trái, Chân dung cô dâu váy trắng bên phải */}
-      <HeroDressShowcase3D />
+      {/* Hero Banner — Carousel cô dâu tách nền theo từng sắc độ riêng */}
+      <HeroDressShowcase3D banners={data?.banners} />
 
-      {/* Lookbook Video Showcase — Khối phụ tím nhạt dịu */}
+      {/* Lookbook Video Showcase — Nền hồng kem cực nhạt */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-10 rounded-3xl border border-lavender-deep bg-soft-lavender/50 p-6 sm:p-10 lg:grid-cols-12">
+        <div className="grid items-center gap-10 rounded-3xl border border-[#EAE2DF] bg-[#F7F0EE] p-6 sm:p-10 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-plum">
               <Film className="h-4 w-4" /> Lookbook Điện Ảnh HD
@@ -115,7 +116,7 @@ export default async function HomePage() {
       </section>
 
       {/* Categories */}
-      <section className="bg-cream/70 py-16">
+      <section className="bg-[#F7F0EE] py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-gold-dark">Phong cách đa dạng</p>
@@ -187,9 +188,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Reviews — Khối phụ hồng nhạt xen kẽ */}
+      {/* Reviews — Nền hồng kem cực nhạt */}
       {reviews.length > 0 && (
-        <section className="bg-soft-pink/55 py-16">
+        <section className="bg-[#F7F0EE] py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-center font-serif text-3xl font-semibold text-charcoal sm:text-4xl">
               Cảm Nhận Từ Các Cặp Đôi

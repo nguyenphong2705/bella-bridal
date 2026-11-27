@@ -10,8 +10,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    background-color: #FFFDFC;
-    color: #3A2E39;
+    background-color: #FAF8F7;
+    color: #2B2426;
   }
 
   h1, h2, h3, h4 {

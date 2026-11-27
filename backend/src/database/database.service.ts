@@ -5,6 +5,17 @@ import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 import { EXTRA_DRESSES } from './extra-dresses';
 
+export function slugifyVi(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/đ/g, 'd')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
@@ -53,6 +64,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     this.db.exec('PRAGMA foreign_keys = ON;');
     this.migrate();
     this.seedIfEmpty();
+    this.seedBannersIfEmpty();
     this.normalizeAllPhonesToPlus84();
   }
 
@@ -250,7 +262,91 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         content TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
+
+      CREATE TABLE IF NOT EXISTS hero_banners (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        badge TEXT NOT NULL DEFAULT 'HAUTE COUTURE BRIDAL 2026',
+        title TEXT NOT NULL,
+        subtitle TEXT,
+        image_url TEXT NOT NULL,
+        bg_gradient TEXT,
+        cta_text TEXT NOT NULL DEFAULT 'Đặt lịch thử váy ngay',
+        cta_link TEXT NOT NULL DEFAULT '/dat-lich',
+        secondary_cta_text TEXT NOT NULL DEFAULT 'Xem bộ sưu tập',
+        secondary_cta_link TEXT NOT NULL DEFAULT '/bo-suu-tap',
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
     `);
+  }
+
+  private seedBannersIfEmpty() {
+    const count = (this.db.prepare('SELECT COUNT(*) as c FROM hero_banners').get() as { c: number }).c;
+    if (count > 0) return;
+
+    const insert = this.db.prepare(
+      `INSERT INTO hero_banners (badge, title, subtitle, image_url, bg_gradient, cta_text, cta_link, secondary_cta_text, secondary_cta_link, sort_order, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
+    );
+
+    const slides = [
+      {
+        badge: 'HAUTE COUTURE BRIDAL 2026',
+        title: 'Vẻ Đẹp Tinh Khôi Cho Ngày Trọng Đại',
+        subtitle:
+          'Khám phá hơn 250+ tuyệt tác váy cưới nhập khẩu và thiết kế độc bản tại BellaBridal. Trải nghiệm thử váy riêng tư 1-1 cùng Bridal Stylist với hệ thống đặt lịch thời gian thực.',
+        image_url: '/images/hero-slide-1.png',
+        bg_gradient:
+          'linear-gradient(180deg, #B59CA0 0%, #C8ADA8 24%, #D7B8B0 48%, #CE9F97 72%, #EADBD6 92%, #DFCCC6 100%)',
+        sort_order: 1,
+      },
+      {
+        badge: 'ETHEREAL FLORAL COUTURE',
+        title: 'Nét Duyên Mơ Màng Trong Từng Cánh Hoa',
+        subtitle:
+          'Thiết kế ren hoa 3D thủ công kết hợp voan lưới Pháp siêu nhẹ, tôn vinh nét thanh thoát dịu dàng cho nàng dâu hiện đại.',
+        image_url: '/images/hero-slide-2.png',
+        bg_gradient:
+          'linear-gradient(180deg, #B8ADB8 0%, #CCC0C8 24%, #DFD0D4 48%, #D3B8BE 72%, #EFE5E6 92%, #E5D7D9 100%)',
+        sort_order: 2,
+      },
+      {
+        badge: 'ROYAL MERMAID SILHOUETTE',
+        title: 'Đường Cong Kiêu Sa & Thanh Lịch Vượt Thời Gian',
+        subtitle:
+          'Phom dáng đuôi cá trễ vai ôm trọn nét quyến rũ tinh tế, đi kèm khăn voan dài thướt tha dành riêng cho lễ đường.',
+        image_url: '/images/hero-slide-3.png',
+        bg_gradient:
+          'linear-gradient(180deg, #B6BCB3 0%, #C8CDC2 24%, #DBD9CF 48%, #D4C7BC 72%, #EDE7E1 92%, #E3DBD3 100%)',
+        sort_order: 3,
+      },
+      {
+        badge: 'TIMELESS SATIN EDITION',
+        title: 'Ánh Hào Quang Rạng Rỡ Ngày Hạnh Phúc',
+        subtitle:
+          'Chất liệu lụa Satin cao cấp nhập khẩu Ý với đường cắt tối giản chuẩn xác, giúp cô dâu tỏa sáng tự nhiên trong mọi khoảnh khắc.',
+        image_url: '/images/hero-slide-4.png',
+        bg_gradient:
+          'linear-gradient(180deg, #BCAA98 0%, #CEBBA8 24%, #E0CEC0 48%, #D6B9A6 72%, #F1E5DC 92%, #E8D9CE 100%)',
+        sort_order: 4,
+      },
+    ];
+
+    for (const s of slides) {
+      insert.run(
+        s.badge,
+        s.title,
+        s.subtitle,
+        s.image_url,
+        s.bg_gradient,
+        'Đặt lịch thử váy ngay',
+        '/dat-lich',
+        'Xem bộ sưu tập',
+        '/bo-suu-tap',
+        s.sort_order
+      );
+    }
   }
 
   private seedIfEmpty() {

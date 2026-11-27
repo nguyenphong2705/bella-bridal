@@ -111,6 +111,21 @@ export interface Appointment {
   notifications?: NotificationLog[];
 }
 
+export interface HeroBanner {
+  id: number;
+  badge: string;
+  title: string;
+  subtitle: string | null;
+  image_url: string;
+  bg_gradient: string | null;
+  cta_text: string;
+  cta_link: string;
+  secondary_cta_text: string;
+  secondary_cta_link: string;
+  sort_order: number;
+  is_active: number | boolean;
+}
+
 export interface SiteSettings {
   [key: string]: string;
 }

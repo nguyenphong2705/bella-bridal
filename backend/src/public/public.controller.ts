@@ -1,9 +1,9 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Inject, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { DatabaseService, formatVnPhonePlus84 } from '../database/database.service';
 
 @Controller('api/v1')
 export class PublicController {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(@Inject(DatabaseService) private readonly db: DatabaseService) {}
 
   @Get('health')
   health() {
@@ -56,6 +56,10 @@ export class PublicController {
 
     const settings = this.publicSettings();
 
+    const banners = this.db.db
+      .prepare('SELECT * FROM hero_banners WHERE is_active = 1 ORDER BY sort_order ASC, id ASC')
+      .all();
+
     return {
       categories,
       featured_dresses: featuredDresses,
@@ -63,6 +67,16 @@ export class PublicController {
       reviews,
       posts,
       settings,
+      banners,
+    };
+  }
+
+  @Get('banners')
+  banners() {
+    return {
+      data: this.db.db
+        .prepare('SELECT * FROM hero_banners WHERE is_active = 1 ORDER BY sort_order ASC, id ASC')
+        .all(),
     };
   }
 

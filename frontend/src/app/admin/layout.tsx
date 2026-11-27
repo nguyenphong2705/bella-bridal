@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Calendar, LayoutDashboard, LogOut, Settings, Sparkles } from 'lucide-react';
+import { BookOpen, Calendar, ConciergeBell, Image as ImageIcon, LayoutDashboard, LogOut, Settings, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -11,11 +11,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const { user, loading, logout } = useAuth();
 
-  const isLogin = pathname === '/admin/login';
+  const isLogin = pathname === '/admin/dang-nhap';
 
   useEffect(() => {
     if (!loading && !user && !isLogin) {
-      router.replace('/admin/login');
+      router.replace('/admin/dang-nhap');
     }
   }, [loading, user, isLogin, router]);
 
@@ -26,9 +26,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const nav = [
     { href: '/admin', label: 'Tổng quan', icon: LayoutDashboard },
-    { href: '/admin/appointments', label: 'Lịch hẹn & ZNS', icon: Calendar },
-    { href: '/admin/dresses', label: 'Váy cưới', icon: Sparkles },
-    { href: '/admin/settings', label: 'Cấu hình', icon: Settings },
+    { href: '/admin/lich-hen', label: 'Lịch hẹn & ZNS', icon: Calendar },
+    { href: '/admin/vay-cuoi', label: 'Váy cưới', icon: Sparkles },
+    { href: '/admin/dich-vu', label: 'Dịch vụ', icon: ConciergeBell },
+    { href: '/admin/tap-chi', label: 'Tạp chí cưới', icon: BookOpen },
+    { href: '/admin/banner', label: 'Banner trang chủ', icon: ImageIcon },
+    { href: '/admin/cau-hinh', label: 'Cấu hình', icon: Settings },
   ];
 
   return (
@@ -62,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           type="button"
           onClick={async () => {
             await logout();
-            router.push('/admin/login');
+            router.push('/admin/dang-nhap');
           }}
           className="flex items-center gap-2 rounded-xl border border-blush-pink px-3.5 py-2.5 text-sm text-charcoal hover:bg-soft-pink"
         >

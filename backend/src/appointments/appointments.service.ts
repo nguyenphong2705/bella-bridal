@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import { DatabaseService, formatVnPhonePlus84 } from '../database/database.service';
 import { NotificationService } from '../notifications/notification.service';
@@ -15,8 +15,8 @@ export class AppointmentsService {
   public readonly availabilityEvents$ = new Subject<{ date: string; slots: SlotAvailability[] }>();
 
   constructor(
-    private readonly db: DatabaseService,
-    private readonly notifications: NotificationService
+    @Inject(DatabaseService) private readonly db: DatabaseService,
+    @Inject(NotificationService) private readonly notifications: NotificationService
   ) {}
 
   getAvailability(date: string): SlotAvailability[] {

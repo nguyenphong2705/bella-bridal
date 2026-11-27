@@ -1,10 +1,10 @@
-import { Body, Controller, Get, MessageEvent, Post, Query, Sse } from '@nestjs/common';
+import { Body, Controller, Get, Inject, MessageEvent, Post, Query, Sse } from '@nestjs/common';
 import { Observable, filter, map, startWith } from 'rxjs';
 import { AppointmentsService } from './appointments.service';
 
 @Controller('api/v1/appointments')
 export class AppointmentsController {
-  constructor(private readonly appointmentsService: AppointmentsService) {}
+  constructor(@Inject(AppointmentsService) private readonly appointmentsService: AppointmentsService) {}
 
   @Get('availability')
   availability(@Query('date') date?: string) {

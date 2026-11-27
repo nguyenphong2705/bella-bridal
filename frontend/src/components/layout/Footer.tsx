@@ -9,7 +9,7 @@ export default function Footer() {
   const { settings } = useSite();
 
   return (
-    <footer className="border-t border-blush-pink bg-gradient-to-b from-soft-pink to-blush-pink/70 text-charcoal">
+    <footer className="border-t border-[#EAE2DF] bg-[#F7F0EE] text-charcoal">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div>
           <h3 className="font-serif text-2xl font-semibold text-charcoal">
@@ -22,7 +22,7 @@ export default function Footer() {
 
         <div>
           <h4 className="font-serif text-lg font-semibold text-charcoal">Khám phá</h4>
-          <ul className="mt-3 space-y-2 text-sm text-charcoal/85">
+          <ul className="mt-3 space-y-2 text-sm text-muted">
             <li><Link href="/bo-suu-tap" className="hover:text-plum">Bộ sưu tập váy cưới</Link></li>
             <li><Link href="/dich-vu" className="hover:text-plum">Dịch vụ cưới trọn gói</Link></li>
             <li><Link href="/dat-lich" className="hover:text-plum">Đặt lịch thử váy 1-1</Link></li>
@@ -33,7 +33,7 @@ export default function Footer() {
 
         <div>
           <h4 className="font-serif text-lg font-semibold text-charcoal">Liên hệ Studio</h4>
-          <ul className="mt-3 space-y-2.5 text-sm text-charcoal/85">
+          <ul className="mt-3 space-y-2.5 text-sm text-muted">
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-plum" />
               <span>{settings.address || '128 Đồng Khởi, Quận 1, TP. HCM'}</span>
@@ -57,7 +57,7 @@ export default function Footer() {
 
         <div>
           <h4 className="font-serif text-lg font-semibold text-charcoal">Đặt lịch thử váy riêng tư</h4>
-          <p className="mt-3 text-sm leading-relaxed text-charcoal/85">
+          <p className="mt-3 text-sm leading-relaxed text-muted">
             Trải nghiệm phòng thử váy VIP 1-1 cùng Bridal Stylist và nhận tư vấn phom dáng miễn phí.
           </p>
           <Link href="/dat-lich" className="btn-primary mt-4 w-full justify-center">
@@ -66,7 +66,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-rose-gold/20 py-5 text-center text-xs text-charcoal/80">
+      <div className="border-t border-[#EAE2DF] py-5 text-center text-xs text-muted">
         © {new Date().getFullYear()} {settings.brand_name || 'BellaBridal Studio'}. Trân trọng cảm ơn quý khách.
       </div>
     </footer>
